@@ -1,23 +1,3 @@
-from collections import defaultdict
-
-
-def part_1(entries):
-    stack = []
-    ret = 0
-    n = len(entries)
-    i = 0
-    while i < n:
-        stack.append([entries[i], entries[i + 1]])
-        i += 2
-        while stack and stack[-1][0] == 0:  # leaf node
-            _, m = stack.pop()
-            ret += sum(entries[i : i + m])
-            i += m
-            if stack:
-                stack[-1][0] -= 1
-    return ret
-
-
 class Node:
     def __init__(self, c, m):
         self.c = c
@@ -26,19 +6,7 @@ class Node:
         self.metadata = []
 
 
-def get_value(node):
-    if len(node.children) == 0:
-        return sum(node.metadata)
-
-    ret = 0
-    for c_i in node.metadata:
-        if c_i <= len(node.children):
-            c = node.children[c_i - 1]
-            ret += get_value(c)
-    return ret
-
-
-def part_2(entries):
+def parse(entries):
     nodes = []
     stack = []
     n = len(entries)
@@ -56,11 +24,28 @@ def part_2(entries):
             i += node.m
             if stack:
                 stack[-1].c -= 1
-    return get_value(nodes[0])
+    return nodes
+
+
+def get_value(node):
+    if len(node.children) == 0:
+        return sum(node.metadata)
+        
+    ret = 0
+    for c_i in node.metadata:
+        if c_i <= len(node.children):
+            c = node.children[c_i - 1]
+            ret += get_value(c)
+    return ret
+
+
+def get_total_metadata(nodes):
+    return sum(sum(n.metadata) for n in nodes)
 
 
 if __name__ == "__main__":
     with open("day_8.txt") as f:
         entries = list(map(int, f.read().split(" ")))
-    print(part_1(entries))
-    print(part_2(entries))
+    nodes = parse(entries)
+    print(f"Part 1 answer: {get_total_metadata(nodes)}.")
+    print(f"Part 2 answer: {get_value(nodes[0])}.")
